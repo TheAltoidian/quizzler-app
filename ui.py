@@ -28,18 +28,37 @@ class QuizInterface:
 
         # True button
         right = PhotoImage(file="./images/true.png")
-        self.true_button = Button(image=right, bg=THEME_COLOR, highlightthickness=0)
+        self.true_button = Button(image=right, bg=THEME_COLOR, highlightthickness=0, command=self.guess_true)
         self.true_button.grid(column=0, row=2)
 
         # False button
         wrong = PhotoImage(file="./images/false.png")
-        self.true_button = Button(image=wrong, bg=THEME_COLOR, highlightthickness=0)
-        self.true_button.grid(column=1, row=2)
+        self.false_button = Button(image=wrong, bg=THEME_COLOR, highlightthickness=0, command=self.guess_false)
+        self.false_button.grid(column=1, row=2)
 
         self.get_next_question()
 
         self.window.mainloop()
 
     def get_next_question(self):
-        q_text = self.quiz.next_question()
-        self.canvas.itemconfig(self.question_text, text=q_text)
+        self.canvas.config(bg="white")
+        if self.quiz.still_has_questions():
+            self.score.config(text=f"Score: {self.quiz.score}")
+            q_text = self.quiz.next_question()
+            self.canvas.itemconfig(self.question_text, text=q_text)
+        else:
+            self.canvas.itemconfig(self.question_text, text="End of the quiz")
+            self.true_button.config(state="disabled")
+            self.false_button.config(state="disabled")
+
+    def guess_true(self):
+        self.give_feedback(self.quiz.check_answer("True"))
+    def guess_false(self):
+        self.give_feedback(self.quiz.check_answer("False"))
+
+    def give_feedback(self, is_right):
+        if is_right:
+            self.canvas.config(bg="green")
+        else:
+            self.canvas.config(bg="red")
+        self.window.after(1000, self.get_next_question)
